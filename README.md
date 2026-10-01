@@ -15,9 +15,8 @@ Georgia Council for Safer Gaming: a public transparency page plus an internal bo
 ## 1. Set up Supabase
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. In **SQL Editor**, run these in order:
-   - `supabase/migrations/0001_init.sql`: tables and row-level security
-   - `supabase/seed.sql`: data imported from *GCSG Meetings and Links.xlsx*
+2. In **SQL Editor**, open a new query, paste all of `supabase/setup_all.sql`, edit the staff emails at the bottom, and click **Run**. It creates the tables and row-level security, loads the spreadsheet data and adds staff in one go, and it is safe to re-run (it clears earlier attempts first). The last row should read `Setup complete | 16 | 346 | 27`.
+   - Equivalent manual route: run `supabase/migrations/0001_init.sql`, then `supabase/seed.sql`.
 3. Give staff access. Only emails in the `staff` table can see `/admin` data:
    ```sql
    insert into public.staff (email, display_name, initials) values
