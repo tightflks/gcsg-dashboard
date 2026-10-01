@@ -1,5 +1,11 @@
-export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+// Tolerate common copy-paste mistakes in the dashboard env settings: surrounding
+// whitespace/quotes, a trailing slash, or the REST path copied along with the URL.
+const clean = (v: string | undefined) => (v ?? "").trim().replace(/^["']|["']$/g, "").trim();
+
+export const SUPABASE_URL = clean(process.env.NEXT_PUBLIC_SUPABASE_URL)
+  .replace(/\/rest\/v1\/?$/, "")
+  .replace(/\/+$/, "");
+export const SUPABASE_ANON_KEY = clean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 

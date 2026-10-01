@@ -15,22 +15,29 @@ export async function updateSession(request: NextRequest) {
   }
 
   let response = NextResponse.next({ request });
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
+  let user: unknown = null;
+  try {
+    const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        },
       },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    });
+    ({
+      data: { user },
+    } = await supabase.auth.getUser());
+  } catch (err) {
+    // Never take the whole site down over auth: log it, keep public pages up,
+    // and treat the visitor as signed out (so /admin still fails closed).
+    console.error("[middleware] Supabase session check failed — check NEXT_PUBLIC_SUPABASE_* env vars:", err);
+    response = NextResponse.next({ request });
+  }
 
   if (isAdmin && !user) {
     const url = request.nextUrl.clone();
